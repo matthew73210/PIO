@@ -20,7 +20,8 @@ void setup() {
   while (WiFi.status() != WL_CONNECTED) delay(100);
 
   // Configure I2S in PDM mode
-  I2SConfig cfg = i2sStream.defaultConfig(RX_MODE_PDM);
+  I2SConfig cfg = i2sStream.defaultConfig(RX_MODE);
+  cfg.signal_type = PDM;
   cfg.pin_ws   = 22;     // CLK (change to your pin)
   cfg.pin_data = 23;     // DATA (change to your pin)
   cfg.sample_rate = audioInfo.sample_rate;
@@ -34,7 +35,7 @@ void setup() {
 
 void loop() {
   if (rtspServer.readyToSendAudio()) {
-    size_t bytesRead = i2sStream.read((uint8_t*)sampleBuffer, sizeof(sampleBuffer));
+    size_t bytesRead = i2sStream.readBytes((uint8_t*)sampleBuffer, sizeof(sampleBuffer));
     if (bytesRead) {
       rtspServer.sendRTSPAudio(sampleBuffer, bytesRead / sizeof(int16_t));
     }
