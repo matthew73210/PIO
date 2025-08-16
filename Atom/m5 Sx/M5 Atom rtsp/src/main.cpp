@@ -1,16 +1,20 @@
 #include <Arduino.h>
 #include <WiFi.h>
-#include "AudioTools.h"              // I2S + streaming helpers
-#include "AudioLibs/RTSPServer.h"    // RTSP over TCP
+#include <M5Unified.h>               // M5Stack unified device support
+#include "AudioTools.h"             // I2S handling
+#include <ESP32-RTSPServer.h>        // Updated RTSP server library
 
 const char* ssid     = "YOUR_SSID";
 const char* password = "YOUR_PASSWORD";
 
 AudioInfo   audioInfo(16000, 1, 16); // 16‑kHz mono, 16‑bit PCM
 I2SStream   i2sStream;
-RTSPServer  rtsp(audioInfo, i2sStream);  // serves the I2S stream
+RTSPServer  rtspServer;              // RTSP server instance
+const size_t bufferSamples = 512;
+int16_t sampleBuffer[bufferSamples];
 
 void setup() {
+  M5.begin();
   Serial.begin(115200);
   WiFi.begin(ssid, password);
   while (WiFi.status() != WL_CONNECTED) delay(100);
@@ -24,12 +28,16 @@ void setup() {
   cfg.channels = audioInfo.channels;
   i2sStream.begin(cfg);
 
-  rtsp.setDefaultTransport(Transport::TCP);  // RTP-over-TCP
-  rtsp.begin("mic");                         // rtsp://<ip>/mic
-  Serial.printf("RTSP URL: rtsp://%s/mic\n", WiFi.localIP().toString().c_str());
+  rtspServer.init(RTSPServer::AUDIO_ONLY, 8554, audioInfo.sample_rate);
+  Serial.printf("RTSP URL: rtsp://%s:8554/mic\n", WiFi.localIP().toString().c_str());
 }
 
 void loop() {
-  rtsp.handleClient();   // manage RTSP connections
-  rtsp.write(i2sStream); // push audio data to clients
+  if (rtspServer.readyToSendAudio()) {
+    size_t bytesRead = i2sStream.read((uint8_t*)sampleBuffer, sizeof(sampleBuffer));
+    if (bytesRead) {
+      rtspServer.sendRTSPAudio(sampleBuffer, bytesRead / sizeof(int16_t));
+    }
+  }
+  delay(1);
 }
