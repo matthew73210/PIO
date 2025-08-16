@@ -1,0 +1,84 @@
+# macOS system files
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+.Spotlight-V100
+.Trashes
+.AppleDesktop
+.DocumentRevisions-V100
+.fseventsd
+.apdisk
+
+# General backup / temporary files
+*.swp
+*~
+*.tmp
+*.bak
+*.orig
+*.save
+
+# Node.js / JavaScript
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg
+*.egg-info/
+.eggs/
+dist/
+build/
+*.manifest
+*.spec
+.venv/
+env/
+venv/
+ENV/
+
+# Java / Kotlin
+*.class
+*.jar
+*.war
+*.ear
+*.iml
+*.log
+.gradle/
+build/
+
+# C / C++
+*.o
+*.obj
+*.so
+*.dll
+*.exe
+*.out
+
+# Rust
+target/
+Cargo.lock
+
+# Go
+bin/
+vendor/
+
+# IDE / Editor configs
+.vscode/
+.idea/
+*.sublime-workspace
+*.sublime-project
+*.code-workspace
+
+# Others
+coverage/
+logs/
+*.log
+*.cache
+.cache/

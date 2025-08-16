@@ -1,0 +1,127 @@
+[platformio]
+default_envs = 
+  esp32dev-ble-1
+  esp32dev-ble-2
+  env:nodemcuv2-ONOFFPILIGHT
+
+;esp32 1
+[env:esp32dev-ble-1]
+platform = ${com.esp32_platform}
+board = esp32dev
+board_build.partitions = min_spiffs.csv
+lib_deps =
+  ${com-esp.lib_deps}
+  ${libraries.ble}
+build_flags = 
+  ${com-esp.build_flags}
+  '-DZgatewayBT="BT"'
+  '-DGateway_Name="OpenMQTTGateway_ESP32_1"'
+upload_protocol = espota
+upload_port = 192.168.1.82
+upload_flags =
+  --auth=OTAPASSWORD
+upload_speed = 512000
+monitor_speed = 115200
+
+;esp32 2
+[env:esp32dev-ble-2]
+platform = ${com.esp32_platform}
+board = esp32dev
+board_build.partitions = min_spiffs.csv
+lib_deps =
+  ${com-esp.lib_deps}
+  ${libraries.ble}
+build_flags = 
+  ${com-esp.build_flags}
+  '-DZgatewayBT="BT"'
+  '-DGateway_Name="OpenMQTTGateway_ESP32_2"'
+  ;-DCORE_DEBUG_LEVEL=4
+upload_protocol = espota
+upload_port = 192.168.1.111
+upload_flags =
+  --auth=OTAPASSWORD
+upload_speed = 512000
+monitor_speed = 115200
+
+[env:nodemcuv2-ONOFFPILIGHT]
+platform = ${com.esp8266_platform}
+board = nodemcuv2
+lib_deps =
+  ${com-esp.lib_deps}
+  ${libraries.esppilight}
+  ${libraries.esp8266_mdns}
+  ${libraries.wire}
+build_flags = 
+  ${com-esp.build_flags}
+  '-DZgatewayPilight="Pilight"'
+  '-DZactuatorONOFF="ONOFF"'
+  '-DGateway_Name="OpenMQTTGateway_ESP8266_ONOFFRF"'
+board_build.flash_mode = dout
+
+[env:esp32-lolin32lite-ble-lp]
+platform = ${com.esp32_platform}
+board = lolin32
+board_build.partitions = min_spiffs.csv
+lib_deps =
+  ${com-esp.lib_deps}
+  ${libraries.ble}
+build_flags =
+  ${com-esp.build_flags}
+  '-DZgatewayBT="BT"'
+  '-DLED_RECEIVE=22'
+  '-DLED_RECEIVE_ON=0'
+  '-DGateway_Name="OpenMQTTGateway_LOLIN32LITE_LP"'
+  '-DESPWifiManualSetup=true'
+  '-Dwifi_ssid="MyWiFiAP"'
+  '-Dwifi_password="MyWiFiAPPassword"'
+  '-DMQTT_USER="lolin-esp32"'
+  '-DMQTT_PASS="abcdefghi"'
+  '-DMQTT_SERVER="192.168.1.17"'
+  '-DDEFAULT_LOW_POWER_MODE=2'
+
+;hacked Sonoff RF-Bridge
+[env:sonoff-rfbridge-hacked]
+platform = ${com.esp8266_platform}
+board = esp8285
+lib_deps = 
+	${com-esp.lib_deps}
+	${libraries.esppilight}
+build_flags = 
+	${com-esp.build_flags}
+	'-DZgatewayPilight="Pilight"'
+	'-DRF_RECEIVER_GPIO=4'
+	'-DRF_EMITTER_GPIO=5'
+	'-DLED_INFO=13'
+	'-DLED_INFO_ON=0'
+	'-DZsensorGPIOInput="GPIOInput"'
+	'-DINPUT_GPIO=0'
+	'-DGateway_Name="OpenMQTTGateway_SRFB_Direct"'
+board_build.flash_mode = dout
+board_build.ldscript = eagle.flash.1m64.ld ;this frees more space for firmware uplad via OTA.
+
+;hacked Sonoff RF-Bridge OTA flash
+[env:sonoff-rfbridge-hacked-ota]
+upload_protocol = espota
+upload_port = <ip> ;change this to the IP address of you SRFB
+upload_speed = 512000
+upload_flags = 
+    --auth=OTAPASSWORD
+    --port=8266
+platform = ${com.esp8266_platform}
+board = esp8285
+lib_deps = 
+	${com-esp.lib_deps}
+	${libraries.esppilight}
+build_flags = 
+	${com-esp.build_flags}
+	'-DZgatewayPilight="Pilight"'
+	'-DRF_RECEIVER_GPIO=4'
+	'-DRF_EMITTER_GPIO=5'
+	'-DLED_INFO=13'
+	'-DLED_INFO_ON=0'
+	'-DZsensorGPIOInput="GPIOInput"'
+	'-DINPUT_GPIO=0'
+	'-DGateway_Name="OpenMQTTGateway_SRFB_Direct"'
+board_build.flash_mode = dout
+extra_scripts = scripts/compressFirmware.py
+board_build.ldscript = eagle.flash.1m64.ld ;this frees more space for firmware uplad. Should also be uses for initial flash via serial
