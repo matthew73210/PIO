@@ -40,11 +40,16 @@ void setup() {
     Serial.println("I2S configuration failed");
   } else {
     Serial.println("I2S configured");
+    if (i2sStream.available() >= 0) {
+      Serial.println("Microphone detected/configured");
+    } else {
+      Serial.println("Microphone not detected");
+    }
   }
 
   bool rtspInit = rtspServer.init(RTSPServer::AUDIO_ONLY, 8554, audioInfo.sample_rate);
   if (rtspInit) {
-    Serial.println("RTSP server initialized");
+    Serial.println("RTSP server ready, waiting for connections...");
   } else {
     Serial.println("Failed to initialize RTSP server");
   }
@@ -53,7 +58,17 @@ void setup() {
 
 void loop() {
   static unsigned long lastLog = 0;
-  if (rtspServer.readyToSendAudio()) {
+  static bool clientConnected = false;
+  static bool waitingLogged = false;
+
+  bool ready = rtspServer.readyToSendAudio();
+  if (ready) {
+    if (!clientConnected) {
+      Serial.println("Client connected");
+      clientConnected = true;
+      waitingLogged = false;
+    }
+
     size_t bytesRead = i2sStream.readBytes((uint8_t*)sampleBuffer, sizeof(sampleBuffer));
     if (bytesRead) {
       rtspServer.sendRTSPAudio(sampleBuffer, bytesRead / sizeof(int16_t));
@@ -65,9 +80,15 @@ void loop() {
       Serial.printf("bytesRead: %u\n", bytesRead);
       lastLog = millis();
     }
-  } else if (millis() - lastLog > 1000) {
-    Serial.println("RTSP server not ready");
-    lastLog = millis();
+  } else {
+    if (clientConnected) {
+      Serial.println("Client disconnected");
+      clientConnected = false;
+    }
+    if (!waitingLogged) {
+      Serial.println("Waiting for RTSP client...");
+      waitingLogged = true;
+    }
   }
   delay(1);
 }
