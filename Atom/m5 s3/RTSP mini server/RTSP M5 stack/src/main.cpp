@@ -1,33 +1,18 @@
 #include <Arduino.h>
-#include <WiFi.h>
 
-// Simple RTSP-like server on port 8554
-WiFiServer rtspServer(8554);
+// put function declarations here:
+int myFunction(int, int);
 
 void setup() {
-  Serial.begin(115200);
-  Serial.println("Booting...");
-
-  // Start listening for RTSP clients
-  rtspServer.begin();
-  Serial.println("RTSP server started on port 8554");
+  // put your setup code here, to run once:
+  int result = myFunction(2, 3);
 }
 
 void loop() {
-  WiFiClient client = rtspServer.available();
-  if (client) {
-    Serial.println("Client connected");
-
-    // Echo any received data back to the client
-    while (client.connected()) {
-      if (client.available()) {
-        client.write(client.read());
-      }
-      delay(1);
-    }
-
-    Serial.println("Client disconnected");
-    client.stop();
-  }
+  // put your main code here, to run repeatedly:
 }
 
+// put function definitions here:
+int myFunction(int x, int y) {
+  return x + y;
+}
