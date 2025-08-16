@@ -41,10 +41,26 @@ void setup() {
     Serial.println("I2S configuration failed");
   } else {
     Serial.println("I2S configured");
-    if (i2sStream.available() >= 0) {
-      Serial.println("Microphone detected/configured");
+
+    // Attempt to read a few samples to validate microphone output
+    int16_t testBuffer[16];
+    size_t bytes = i2sStream.readBytes((uint8_t *)testBuffer, sizeof(testBuffer));
+    bool valid = false;
+
+    if (bytes > 0) {
+      size_t samples = bytes / sizeof(testBuffer[0]);
+      for (size_t i = 0; i < samples; ++i) {
+        if (testBuffer[i] != 0 && testBuffer[i] != -1) {
+          valid = true;
+          break;
+        }
+      }
+    }
+
+    if (valid) {
+      Serial.println("Microphone detected");
     } else {
-      Serial.println("Microphone not detected");
+      Serial.println("Microphone not detected or invalid data");
     }
   }
 
