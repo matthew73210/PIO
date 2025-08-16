@@ -3,6 +3,7 @@
 #include <M5Unified.h>               // M5Stack unified device support
 #include "AudioTools.h"             // I2S handling
 #include <ESP32-RTSPServer.h>        // Updated RTSP server library
+#include <esp_log.h>                 // ESP-IDF logging control
 
 const char* ssid     = "YOUR_SSID";
 const char* password = "YOUR_PASSWORD";
@@ -16,6 +17,7 @@ int16_t sampleBuffer[bufferSamples];
 void setup() {
   M5.begin();
   Serial.begin(115200);
+  esp_log_level_set("*", ESP_LOG_DEBUG); // Enable verbose logging
   Serial.println("Starting M5 Atom RTSP server");
   Serial.println("Connecting to WiFi...");
   WiFi.begin(ssid, password);
@@ -40,8 +42,12 @@ void setup() {
     Serial.println("I2S configured");
   }
 
-  rtspServer.init(RTSPServer::AUDIO_ONLY, 8554, audioInfo.sample_rate);
-  Serial.println("RTSP server initialized");
+  bool rtspInit = rtspServer.init(RTSPServer::AUDIO_ONLY, 8554, audioInfo.sample_rate);
+  if (rtspInit) {
+    Serial.println("RTSP server initialized");
+  } else {
+    Serial.println("Failed to initialize RTSP server");
+  }
   Serial.printf("RTSP URL: rtsp://%s:8554/mic\n", WiFi.localIP().toString().c_str());
 }
 
@@ -49,15 +55,19 @@ void loop() {
   static unsigned long lastLog = 0;
   if (rtspServer.readyToSendAudio()) {
     size_t bytesRead = i2sStream.readBytes((uint8_t*)sampleBuffer, sizeof(sampleBuffer));
-    bool sent = false;
     if (bytesRead) {
       rtspServer.sendRTSPAudio(sampleBuffer, bytesRead / sizeof(int16_t));
-      sent = true;
+      if (!rtspServer.readyToSendAudio()) {
+        Serial.println("sendRTSPAudio failed or client not ready");
+      }
     }
     if (millis() - lastLog > 1000) {
-      Serial.printf("bytesRead: %u, sent: %s\n", bytesRead, sent ? "yes" : "no");
+      Serial.printf("bytesRead: %u\n", bytesRead);
       lastLog = millis();
     }
+  } else if (millis() - lastLog > 1000) {
+    Serial.println("RTSP server not ready");
+    lastLog = millis();
   }
   delay(1);
 }
