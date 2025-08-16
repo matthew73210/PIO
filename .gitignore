@@ -82,3 +82,7 @@ logs/
 *.log
 *.cache
 .cache/
+# Binary assets
+*.png
+*.bin
+
