@@ -30,12 +30,13 @@ void setup() {
   // Configure I2S in PDM mode
   I2SConfig cfg = i2sStream.defaultConfig(RX_MODE);
   cfg.signal_type = PDM;
-  cfg.pin_ws   = 22;     // CLK (change to your pin)
-  cfg.pin_data = 23;     // DATA (change to your pin)
+  cfg.pin_bck = 22;    // CLK
+  cfg.pin_data = 23;   // DATA
+  cfg.pin_ws = -1;     // not used for PDM
   cfg.sample_rate = audioInfo.sample_rate;
   cfg.bits_per_sample = audioInfo.bits_per_sample;
   cfg.channels = audioInfo.channels;
-  Serial.printf("Configuring I2S (WS:%d, DATA:%d, rate:%dHz)\n", cfg.pin_ws, cfg.pin_data, cfg.sample_rate);
+  Serial.printf("Configuring I2S (BCK:%d, DATA:%d, rate:%dHz)\n", cfg.pin_bck, cfg.pin_data, cfg.sample_rate);
   if (!i2sStream.begin(cfg)) {
     Serial.println("I2S configuration failed");
   } else {
