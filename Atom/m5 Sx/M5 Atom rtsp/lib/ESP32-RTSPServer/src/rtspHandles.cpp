@@ -236,8 +236,17 @@ void RTSPServer::handleSetup(char* request, RTSP_Session& session) {
   if (setVideo && this->rtpVideoTaskHandle == NULL) {
     xTaskCreate(rtpVideoTaskWrapper, "rtpVideoTask", RTP_STACK_SIZE, this, RTP_PRI, &this->rtpVideoTaskHandle);
   }
-  if (this->rtspStreamBuffer == NULL && psramFound()) {
+
+  if (this->rtspStreamBuffer == NULL) {
     this->rtspStreamBuffer = (uint8_t*)ps_malloc(MAX_RTSP_BUFFER);
+    if (this->rtspStreamBuffer == NULL) {
+      RTSP_LOGW(LOG_TAG, "Allocating RTSP buffer in internal RAM");
+      this->rtspStreamBuffer = (uint8_t*)heap_caps_malloc(MAX_RTSP_BUFFER, MALLOC_CAP_8BIT);
+      if (this->rtspStreamBuffer == NULL) {
+        RTSP_LOGE(LOG_TAG, "Failed to allocate RTSP stream buffer");
+        return;
+      }
+    }
   }
 #endif
 
@@ -324,6 +333,14 @@ void RTSPServer::handleTeardown(RTSP_Session& session) {
   session.isPlaying = false;
   this->sessions[session.sessionID] = session;
   updateIsPlayingStatus();
+
+#ifdef RTSP_VIDEO_NONBLOCK
+  if (!this->getIsPlaying() && this->rtspStreamBuffer) {
+    free(this->rtspStreamBuffer);
+    this->rtspStreamBuffer = NULL;
+    this->rtspStreamBufferSize = 0;
+  }
+#endif
 
   char response[128];
   int len = snprintf(response, sizeof(response),

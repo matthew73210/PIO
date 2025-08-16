@@ -153,9 +153,11 @@ void RTSPServer::deinit() {
   }
   
   closeSockets();
-  
+
   if (this->rtspStreamBuffer) {
     free(this->rtspStreamBuffer);
+    this->rtspStreamBuffer = NULL;
+    this->rtspStreamBufferSize = 0;
   }
 
   RTSP_LOGI(LOG_TAG, "RTSP server deinitialized.");
