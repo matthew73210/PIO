@@ -5,8 +5,8 @@
 #include <ESP32-RTSPServer.h>        // Updated RTSP server library
 #include <esp_log.h>                 // ESP-IDF logging control
 
-const char* ssid     = "YOUR_SSID";
-const char* password = "YOUR_PASSWORD";
+const char* ssid     = "xxx";
+const char* password = "xxx";
 
 AudioInfo   audioInfo(16000, 1, 16); // 16‑kHz mono, 16‑bit PCM
 I2SStream   i2sStream;
@@ -30,8 +30,8 @@ void setup() {
   // Configure I2S in PDM mode
   I2SConfig cfg = i2sStream.defaultConfig(RX_MODE);
   cfg.signal_type = PDM;
-  cfg.pin_bck = 22;    // CLK
-  cfg.pin_data = 23;   // DATA
+  cfg.pin_bck = 32;    // CLK
+  cfg.pin_data = 26;   // DATA
   cfg.pin_ws = -1;     // not used for PDM
   cfg.sample_rate = audioInfo.sample_rate;
   cfg.bits_per_sample = audioInfo.bits_per_sample;
