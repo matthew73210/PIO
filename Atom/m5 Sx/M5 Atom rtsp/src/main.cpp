@@ -88,7 +88,12 @@ void loop() {
 
     size_t bytesRead = i2sStream.readBytes((uint8_t*)sampleBuffer, sizeof(sampleBuffer));
     if (bytesRead) {
-      rtspServer.sendRTSPAudio(sampleBuffer, bytesRead / sizeof(int16_t));
+      size_t samples = bytesRead / sizeof(sampleBuffer[0]);
+      for (size_t i = 0; i < samples; ++i) {
+        uint16_t s = static_cast<uint16_t>(sampleBuffer[i]);
+        sampleBuffer[i] = static_cast<int16_t>((s >> 8) | (s << 8));
+      }
+      rtspServer.sendRTSPAudio(sampleBuffer, samples);
       if (!rtspServer.readyToSendAudio()) {
         Serial.println("sendRTSPAudio failed or client not ready");
       }
